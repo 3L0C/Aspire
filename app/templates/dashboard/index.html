@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "dashboard/analytics_widget.html" import analytics_widget %}
 
 {% block content %}
 <div class="row">
@@ -27,6 +28,9 @@
                                 </div>
                                 <p>Overall Goal Completion: {{ overall_progress|round(1) }}%</p>
                                 <p>Task Completion Rate: {{ task_completion_rate|round(1) }}%</p>
+                                <div class="text-end">
+                                    <a href="{{ url_for('analytics.index') }}" class="btn btn-sm btn-outline-primary">View Analytics</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -56,6 +60,13 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Analytics Widget -->
+<div class="row">
+    <div class="col-md-12">
+        {{ analytics_widget(streak_data, task_completion_rate) }}
     </div>
 </div>
 

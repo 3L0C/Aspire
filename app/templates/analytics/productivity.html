@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Productivity Analytics</h3>
+                    <div class="btn-group">
+                        <a href="{{ url_for('analytics.index') }}" class="btn btn-sm btn-secondary">Back to Dashboard</a>
+                        <a href="{{ url_for('analytics.goals_overview') }}" class="btn btn-sm btn-outline-primary">Goal Analytics</a>
+                        <a href="{{ url_for('analytics.tasks_overview') }}" class="btn btn-sm btn-outline-primary">Task Analytics</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>This page shows analytics related to your overall productivity patterns and habits.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Productivity Streak Card -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Current Streak</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="streak-counter">
+                        <div class="display-1 mb-3">{{ streak.data }}</div>
+                        <p class="lead">Consecutive days with completed tasks</p>
+                    </div>
+
+                    {% if streak.data > 0 %}
+                        <div class="mt-4">
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar bg-success" role="progressbar"
+                                     style="width: {{ (streak.data/7*100) if streak.data < 7 else 100 }}%;"
+                                     aria-valuenow="{{ streak.data }}" aria-valuemin="0" aria-valuemax="7"></div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-2">
+                                <small>0</small>
+                                <small>7 days</small>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-success mt-4">
+                            {% if streak.data == 1 %}
+                                <p>Great start! You've completed tasks today.</p>
+                            {% elif streak.data < 3 %}
+                                <p>You're building momentum! Keep going.</p>
+                            {% elif streak.data < 7 %}
+                                <p>Impressive streak! You're developing a habit.</p>
+                            {% elif streak.data < 14 %}
+                                <p>Excellent! A full week of productivity!</p>
+                            {% elif streak.data < 30 %}
+                                <p>Outstanding discipline! Keep this routine going.</p>
+                            {% else %}
+                                <p>Amazing consistency! You're a productivity master.</p>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning mt-4">
+                            <p>No current streak. Complete a task today to start building momentum!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Productivity Tips -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Productivity Tips & Insights</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <h5 class="mb-1">The Power of Consistency</h5>
+                            <p>Research shows that consistency is more important than intensity. Completing even one small task each day is better than doing many tasks irregularly.</p>
+                        </div>
+
+                        <div class="list-group-item">
+                            <h5 class="mb-1">Don't Break the Chain</h5>
+                            <p>Try the "Don't Break the Chain" technique popularized by Jerry Seinfeld: mark each day you complete a task on a calendar, creating a visual chain that you'll be motivated to maintain.</p>
+                        </div>
+
+                        <div class="list-group-item">
+                            <h5 class="mb-1">Estimate Time Accurately</h5>
+                            <p>Studies show most people underestimate how long tasks will take by 40-60%. Try multiplying your initial time estimates by 1.5 for more accuracy.</p>
+                        </div>
+
+                        <div class="list-group-item">
+                            <h5 class="mb-1">The Two-Minute Rule</h5>
+                            <p>If a task takes less than two minutes, do it immediately instead of adding it to your list. This prevents small tasks from accumulating.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Future Productivity Features Teaser -->
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Coming Soon: Advanced Productivity Analytics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Productivity by Time of Day</h5>
+                                    <p>Track when you're most productive during the day to optimize your schedule.</p>
+                                    <span class="badge bg-secondary">Coming Soon</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Task Difficulty Analysis</h5>
+                                    <p>Analyze which types of tasks you complete most efficiently to improve planning.</p>
+                                    <span class="badge bg-secondary">Coming Soon</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Goal-Task Impact Analysis</h5>
+                                    <p>See which daily tasks have the biggest impact on your long-term goals.</p>
+                                    <span class="badge bg-secondary">Coming Soon</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.streak-counter {
+    position: relative;
+    padding: 20px;
+}
+
+.streak-counter:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    border: 10px solid #f8f9fa;
+    z-index: 0;
+}
+
+.streak-counter .display-1 {
+    position: relative;
+    z-index: 1;
+    font-weight: bold;
+    color: #28a745;
+}
+</style>
+{% endblock %}

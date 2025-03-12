@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Analytics for {{ goal.title }}</h3>
+                    <div class="btn-group">
+                        <a href="{{ url_for('analytics.goals_overview') }}" class="btn btn-sm btn-secondary">Back to Goals Analytics</a>
+                        <a href="{{ url_for('goals.view', id=goal.id) }}" class="btn btn-sm btn-outline-primary">View Goal</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4>Goal Details</h4>
+                            {% if goal.description %}
+                                <p>{{ goal.description }}</p>
+                            {% else %}
+                                <p><em>No description available</em></p>
+                            {% endif %}
+                            <div class="mb-3">
+                                <strong>Type:</strong>
+                                {% if goal.type == 'long_term' %}
+                                    Long-term Goal
+                                {% elif goal.type == 'short_term' %}
+                                    Short-term Goal
+                                {% elif goal.type == 'milestone' %}
+                                    Milestone
+                                {% else %}
+                                    {{ goal.type|replace('_', ' ')|title }}
+                                {% endif %}
+                            </div>
+                            {% if goal.start_date %}
+                                <div class="mb-3">
+                                    <strong>Start Date:</strong> {{ goal.start_date.strftime('%Y-%m-%d') }}
+                                </div>
+                            {% endif %}
+                            {% if goal.target_date %}
+                                <div class="mb-3">
+                                    <strong>Target Date:</strong> {{ goal.target_date.strftime('%Y-%m-%d') }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Current Progress</h5>
+                                    <div class="display-1 mb-2">{{ goal.progress|round(1) }}%</div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ goal.progress }}%;"
+                                             aria-valuenow="{{ goal.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <span class="badge {% if goal.is_completed %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {{ "Completed" if goal.is_completed else "In Progress" }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Progress Over Time Chart -->
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Progress Over Time</h5>
+                </div>
+                <div class="card-body">
+                    {% if analytics and analytics.progress_over_time and analytics.progress_over_time|length > 0 %}
+                        <canvas id="progress-chart" height="300"></canvas>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p>No progress history available for this goal yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Tasks Analysis -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Related Tasks</h5>
+                </div>
+                <div class="card-body">
+                    {% if analytics and analytics.related_task_stats %}
+                        <div class="text-center mb-4">
+                            <canvas id="tasks-doughnut" height="200"></canvas>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="small text-muted">Completed</div>
+                                <div class="h4">{{ analytics.related_task_stats.completed }}</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="small text-muted">Remaining</div>
+                                <div class="h4">{{ analytics.related_task_stats.remaining }}</div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <div class="small text-muted">Task Completion Rate</div>
+                            <div class="h5">{{ analytics.related_task_stats.completion_rate|default(0)|round(1) }}%</div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p>No tasks are associated with this goal yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if analytics and analytics.child_goal_stats and (
+            analytics.child_goal_stats.total|default(0) > 0 or
+            analytics.child_goal_stats.completed|default(0) > 0 or
+            analytics.child_goal_stats.remaining|default(0) > 0
+        ) %}
+        <!-- Child Goals Analysis -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Child Goals / Milestones</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <canvas id="child-goals-chart" height="220"></canvas>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="small text-muted">Completed</div>
+                            <div class="h4">{{ analytics.child_goal_stats.completed|default(0) }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="small text-muted">Remaining</div>
+                            <div class="h4">{{ analytics.child_goal_stats.remaining|default(0) }}</div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <div class="small text-muted">Milestone Completion Rate</div>
+                        <div class="h5">{{ analytics.child_goal_stats.completion_rate|default(0)|round(1) }}%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Insights and Recommendations -->
+        <div class="col-md-{% if analytics and analytics.child_goal_stats and (
+            analytics.child_goal_stats.total|default(0) > 0 or
+            analytics.child_goal_stats.completed|default(0) > 0 or
+            analytics.child_goal_stats.remaining|default(0) > 0
+        ) %}6{% else %}12{% endif %}">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Insights & Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% if analytics and analytics.related_task_stats and analytics.related_task_stats.remaining|default(0) > 0 %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Focus on completing related tasks</h6>
+                                <p class="mb-1 small">You have {{ analytics.related_task_stats.remaining }} tasks remaining for this goal. Completing these will move your goal forward.</p>
+                            </div>
+                        {% endif %}
+
+                        {% if analytics and analytics.child_goal_stats and analytics.child_goal_stats.remaining|default(0) > 0 %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Work on your milestones</h6>
+                                <p class="mb-1 small">You have {{ analytics.child_goal_stats.remaining }} incomplete milestones for this goal. Focus on making progress on these steps.</p>
+                            </div>
+                        {% endif %}
+
+                        {% if goal.progress < 25 %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Get started with small steps</h6>
+                                <p class="mb-1 small">Your goal is in the early stages. Breaking it down into smaller tasks can help build momentum.</p>
+                            </div>
+                        {% elif goal.progress >= 25 and goal.progress < 75 %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Keep up the momentum</h6>
+                                <p class="mb-1 small">You're making good progress! Stay consistent to maintain your pace.</p>
+                            </div>
+                        {% elif goal.progress >= 75 and goal.progress < 100 %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">The finish line is in sight</h6>
+                                <p class="mb-1 small">You're very close to completing this goal. Stay focused on the final tasks.</p>
+                            </div>
+                        {% elif goal.progress == 100 %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Congratulations!</h6>
+                                <p class="mb-1 small">You've completed this goal. Consider creating a follow-up goal to maintain your progress.</p>
+                            </div>
+                        {% endif %}
+
+                        {% if goal.target_date and goal.target_date < now %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Past target date</h6>
+                                <p class="mb-1 small">This goal's target date has passed. Consider updating the timeline or breaking it down into more manageable pieces.</p>
+                            </div>
+                        {% endif %}
+
+                        {% if not analytics or not analytics.related_task_stats or analytics.related_task_stats.total|default(0) == 0 %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Add tasks to track progress</h6>
+                                <p class="mb-1 small">This goal doesn't have any tasks yet. Adding specific tasks will help you make progress and track your journey.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Progress Over Time Chart
+        // Create a safe version of progress data
+        {% if analytics and analytics.progress_over_time %}
+        const progressData = [
+            {% for item in analytics.progress_over_time %}
+            {
+                date: "{{ item.date.strftime('%Y-%m-%d') if item.date else '' }}",
+                value: {{ item.value|default(0) }}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+
+        if (progressData.length > 0) {
+            const progressLabels = progressData.map(item => item.date);
+            const progressValues = progressData.map(item => item.value);
+
+            const progressCtx = document.getElementById('progress-chart');
+            if (progressCtx) {
+                new Chart(progressCtx, {
+                    type: 'line',
+                    data: {
+                        labels: progressLabels,
+                        datasets: [{
+                            label: 'Progress (%)',
+                            data: progressValues,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.1,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                title: {
+                                    display: true,
+                                    text: 'Progress (%)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        {% endif %}
+
+        // Tasks Doughnut Chart
+        {% if analytics and analytics.related_task_stats %}
+        const tasksCtx = document.getElementById('tasks-doughnut');
+        if (tasksCtx) {
+            new Chart(tasksCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'Remaining'],
+                    datasets: [{
+                        data: [
+                            {{ analytics.related_task_stats.completed|default(0) }},
+                            {{ analytics.related_task_stats.remaining|default(0) }}
+                        ],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.7)',
+                            'rgba(108, 117, 125, 0.7)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        {% endif %}
+
+        {% if analytics and analytics.child_goal_stats and (
+            analytics.child_goal_stats.total|default(0) > 0 or
+            analytics.child_goal_stats.completed|default(0) > 0 or
+            analytics.child_goal_stats.remaining|default(0) > 0
+        ) %}
+        // Child Goals Chart
+        const childGoalsCtx = document.getElementById('child-goals-chart');
+        if (childGoalsCtx) {
+            new Chart(childGoalsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'In Progress'],
+                    datasets: [{
+                        data: [
+                            {{ analytics.child_goal_stats.completed|default(0) }},
+                            {{ analytics.child_goal_stats.remaining|default(0) }}
+                        ],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.7)',
+                            'rgba(0, 123, 255, 0.7)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        {% endif %}
+    });
+</script>
+{% endblock %}

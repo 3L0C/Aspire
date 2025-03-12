@@ -1,0 +1,26 @@
+{% macro analytics_widget(streak_data=None, completion_rate=None) %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Quick Analytics</h5>
+        <a href="{{ url_for('analytics.index') }}" class="btn btn-sm btn-outline-primary">View Analytics</a>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 text-center">
+                <div class="analytics-stat">
+                    <h6>Productivity Streak</h6>
+                    <div class="display-4 mb-0">{{ streak_data if streak_data is not none else '0' }}</div>
+                    <small class="text-muted">consecutive days</small>
+                </div>
+            </div>
+            <div class="col-md-6 text-center">
+                <div class="analytics-stat">
+                    <h6>Task Completion Rate</h6>
+                    <div class="display-4 mb-0">{{ (completion_rate|round(1) if completion_rate is not none else '0') }}%</div>
+                    <small class="text-muted">overall</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

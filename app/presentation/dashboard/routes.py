@@ -5,6 +5,7 @@ from flask_login import login_required, current_user
 from app.presentation.dashboard import dashboard
 from app.data.models.goal import Goal, LongTermGoal, ShortTermGoal
 from app.data.models.task import Task
+from app.analytics.services import AnalyticsService
 from datetime import datetime, timedelta
 from sqlalchemy import and_, or_
 
@@ -44,6 +45,9 @@ def index():
         is_completed=True
     ).order_by(Task.updated_at.desc()).limit(5).all()
 
+    # Get analytics data for widget
+    streak_data = AnalyticsService.get_productivity_streak(current_user.id).data
+
     return render_template(
         'dashboard/index.html',
         long_term_goals=long_term_goals,
@@ -51,7 +55,8 @@ def index():
         upcoming_tasks=upcoming_tasks,
         overall_progress=overall_progress,
         task_completion_rate=task_completion_rate,
-        recent_completed_tasks=recent_completed_tasks
+        recent_completed_tasks=recent_completed_tasks,
+        streak_data=streak_data
     )
 
 @dashboard.route('/overview')

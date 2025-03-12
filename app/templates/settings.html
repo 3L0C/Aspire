@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">User Settings</h3>
+        <a href="{{ url_for('dashboard.index') }}" class="btn btn-sm btn-secondary">Back to Dashboard</a>
+    </div>
+    <div class="card-body">
+        <ul class="nav nav-tabs mb-4" id="settingsTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="true">Profile</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="preferences-tab" data-bs-toggle="tab" data-bs-target="#preferences" type="button" role="tab" aria-controls="preferences" aria-selected="false">Preferences</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="data-tab" data-bs-toggle="tab" data-bs-target="#data" type="button" role="tab" aria-controls="data" aria-selected="false">Data Management</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="settingsTabsContent">
+            <!-- Profile Settings -->
+            <div class="tab-pane fade show active" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" value="{{ current_user.username }}" disabled>
+                        <div class="form-text">Username cannot be changed</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" value="{{ current_user.email }}" disabled>
+                        <div class="form-text">Email address cannot be changed</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="display_name" class="form-label">Display Name</label>
+                        <input type="text" class="form-control" id="display_name" name="display_name" value="{{ current_user.profile.display_name }}">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save Profile</button>
+                </form>
+            </div>
+
+            <!-- Preferences Settings -->
+            <div class="tab-pane fade" id="preferences" role="tabpanel" aria-labelledby="preferences-tab">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="theme" class="form-label">Theme</label>
+                        <select class="form-select" id="theme" name="theme">
+                            <option value="light" {% if preferences.theme == 'light' %}selected{% endif %}>Light</option>
+                            <option value="dark" {% if preferences.theme == 'dark' %}selected{% endif %}>Dark</option>
+                            <option value="auto" {% if preferences.theme == 'auto' or not preferences.theme %}selected{% endif %}>Auto (System Default)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="default_view" class="form-label">Default Dashboard View</label>
+                        <select class="form-select" id="default_view" name="default_view">
+                            <option value="goals" {% if preferences.default_view == 'goals' %}selected{% endif %}>Goals</option>
+                            <option value="tasks" {% if preferences.default_view == 'tasks' %}selected{% endif %}>Tasks</option>
+                            <option value="overview" {% if preferences.default_view == 'overview' or not preferences.default_view %}selected{% endif %}>Overview</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reminder_days" class="form-label">Task Reminders</label>
+                        <select class="form-select" id="reminder_days" name="reminder_days">
+                            <option value="0" {% if preferences.reminder_days == 0 %}selected{% endif %}>No reminders</option>
+                            <option value="1" {% if preferences.reminder_days == 1 %}selected{% endif %}>1 day before due date</option>
+                            <option value="2" {% if preferences.reminder_days == 2 %}selected{% endif %}>2 days before due date</option>
+                            <option value="3" {% if preferences.reminder_days == 3 or not preferences.reminder_days %}selected{% endif %}>3 days before due date</option>
+                            <option value="7" {% if preferences.reminder_days == 7 %}selected{% endif %}>1 week before due date</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Save Preferences</button>
+                </form>
+            </div>
+
+            <!-- Data Management -->
+            <div class="tab-pane fade" id="data" role="tabpanel" aria-labelledby="data-tab">
+                <div class="row">
+                    <!-- Export Section -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">Export Your Data</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Export all your goals and tasks to a file that you can import later.</p>
+
+                                <form action="{{ url_for('data_management.export_data') }}" method="post">
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="format" id="formatJson" value="json" checked>
+                                            <label class="form-check-label" for="formatJson">
+                                                JSON Format
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="format" id="formatCsv" value="csv">
+                                            <label class="form-check-label" for="formatCsv">
+                                                CSV Format (ZIP archive)
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">Export Data</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Import Section -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">Import Data</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>Import previously exported data.</p>
+
+                                <form action="{{ url_for('data_management.import_data') }}" method="post" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="importFile" class="form-label">Select File</label>
+                                        <input class="form-control" type="file" id="importFile" name="file" accept=".json,.zip">
+                                    </div>
+
+                                    <div class="alert alert-warning">
+                                        <strong>Note:</strong> Importing data will add new goals and tasks.
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">Import Data</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">For Advanced Users</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>For more comprehensive data management options, visit the dedicated Import/Export page:</p>
+                                <a href="{{ url_for('data_management.index') }}" class="btn btn-primary">Go to Import/Export Page</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

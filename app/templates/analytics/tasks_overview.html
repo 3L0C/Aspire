@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Task Analytics</h3>
+                    <div class="btn-group">
+                        <a href="{{ url_for('analytics.index') }}" class="btn btn-sm btn-secondary">Back to Dashboard</a>
+                        <a href="{{ url_for('analytics.goals_overview') }}" class="btn btn-sm btn-outline-primary">Goal Analytics</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>This page shows detailed analytics about your tasks, completion patterns, and efficiency.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Task Completion Over Time -->
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">{{ task_completion.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="task-completion-chart" height="300"></canvas>
+                    <div class="row mt-4">
+                        <div class="col-md-3">
+                            <div class="small text-muted">Total Completed</div>
+                            <div class="h5">{{ task_completion.summary_stats.total_completed }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="small text-muted">Daily Average</div>
+                            <div class="h5">{{ task_completion.summary_stats.average_per_day|round(1) }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="small text-muted">Most Productive</div>
+                            <div class="h5">{{ task_completion.summary_stats.most_productive_day or 'N/A' }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="small text-muted">Today's Tasks</div>
+                            <div class="h5">{{ task_completion.summary_stats.tasks_today }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks by Priority -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">{{ tasks_by_priority.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <canvas id="task-priority-chart" height="250"></canvas>
+                    </div>
+                    <div class="row mt-4 text-center">
+                        <div class="col-6">
+                            <div class="small text-muted">Total Tasks</div>
+                            <div class="h5">{{ tasks_by_priority.summary_stats.total_tasks }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="small text-muted">High Priority %</div>
+                            <div class="h5">{{ tasks_by_priority.summary_stats.high_priority_percentage|round(1) }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Estimation Accuracy -->
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">{{ estimation_accuracy.title }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if estimation_accuracy.data %}
+                        <canvas id="estimation-chart" height="300"></canvas>
+                        <div class="row mt-4">
+                            <div class="col-md-4">
+                                <div class="small text-muted">Average Accuracy</div>
+                                <div class="h5">{{ estimation_accuracy.summary_stats.average_accuracy|round(1) }}%</div>
+                                <div class="small text-muted">
+                                    {% if estimation_accuracy.summary_stats.average_accuracy < 80 %}
+                                        You tend to underestimate task durations
+                                    {% elif estimation_accuracy.summary_stats.average_accuracy > 120 %}
+                                        You tend to overestimate task durations
+                                    {% else %}
+                                        Your estimates are generally accurate
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="small text-muted">Most Common</div>
+                                <div class="h5">{{ estimation_accuracy.summary_stats.most_common_category }}</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="small text-muted">Tasks Analyzed</div>
+                                <div class="h5">{{ estimation_accuracy.summary_stats.total_analyzed_tasks }}</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p>Not enough completed tasks with both estimated and actual durations to analyze estimation accuracy.</p>
+                            <p>When completing tasks, record the actual time spent to see insights in this section.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Insights -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Insights & Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% if task_completion.summary_stats.average_per_day < 1 %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Set more achievable daily goals</h6>
+                                <p class="mb-1 small">Your daily task completion rate is low. Consider setting 2-3 achievable tasks per day.</p>
+                            </div>
+                        {% elif task_completion.summary_stats.average_per_day > 5 %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Consider task batching</h6>
+                                <p class="mb-1 small">You complete many tasks daily. Grouping similar tasks might improve efficiency.</p>
+                            </div>
+                        {% endif %}
+
+                        {% if tasks_by_priority.summary_stats.high_priority_percentage > 50 %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Reassess your priorities</h6>
+                                <p class="mb-1 small">{{ tasks_by_priority.summary_stats.high_priority_percentage|round(1) }}% of your tasks are high priority. Consider being more selective about what's truly urgent.</p>
+                            </div>
+                        {% endif %}
+
+                        {% if estimation_accuracy.summary_stats.average_accuracy %}
+                            {% if estimation_accuracy.summary_stats.average_accuracy < 70 %}
+                                <div class="list-group-item">
+                                    <h6 class="mb-1">Improve time estimation</h6>
+                                    <p class="mb-1 small">You significantly underestimate task durations. Try multiplying your estimates by 1.5x for more accuracy.</p>
+                                </div>
+                            {% elif estimation_accuracy.summary_stats.average_accuracy > 150 %}
+                                <div class="list-group-item">
+                                    <h6 class="mb-1">Adjust time estimates</h6>
+                                    <p class="mb-1 small">You tend to overestimate task durations. Consider reducing your estimates by 30%.</p>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+
+                        {% if task_completion.summary_stats.tasks_today == 0 %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Start with one task today</h6>
+                                <p class="mb-1 small">You haven't completed any tasks today. Even one small task can build momentum.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Task Completion Chart
+        const taskCompletionCtx = document.getElementById('task-completion-chart');
+        new Chart(taskCompletionCtx, {
+            type: 'line',
+            data: {
+                labels: {{ task_completion.labels|tojson }},
+                datasets: [{
+                    label: 'Completed Tasks',
+                    data: {{ task_completion.data|map(attribute='count')|list|tojson }},
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        },
+                        ticks: {
+                            maxTicksLimit: 7
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Tasks Completed'
+                        },
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+
+        // Task Priority Chart
+        const taskPriorityCtx = document.getElementById('task-priority-chart').getContext('2d');
+        new Chart(taskPriorityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ tasks_by_priority.labels|tojson }},
+                datasets: [{
+                    data: {{ tasks_by_priority.data|tojson }},
+                    backgroundColor: [
+                        'rgba(220, 53, 69, 0.7)',   // High - red
+                        'rgba(255, 193, 7, 0.7)',   // Medium - yellow
+                        'rgba(23, 162, 184, 0.7)'   // Low - teal
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        {% if estimation_accuracy.data %}
+        // Estimation Accuracy Chart
+        const estimationCtx = document.getElementById('estimation-chart').getContext('2d');
+        new Chart(estimationCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ estimation_accuracy.labels|tojson }},
+                datasets: [{
+                    label: 'Tasks',
+                    data: {{ estimation_accuracy.data|tojson }},
+                    backgroundColor: [
+                        'rgba(220, 53, 69, 0.7)',   // Severely Underestimated
+                        'rgba(255, 193, 7, 0.7)',   // Underestimated
+                        'rgba(40, 167, 69, 0.7)',   // Good Estimate
+                        'rgba(23, 162, 184, 0.7)',  // Overestimated
+                        'rgba(0, 123, 255, 0.7)'    // Severely Overestimated
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Tasks'
+                        },
+                        ticks: {
+                            precision: 0
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Estimation Accuracy'
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}

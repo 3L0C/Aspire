@@ -10,6 +10,7 @@
                 <a href="{{ url_for('tasks.link', id=task.id) }}" class="btn btn-sm btn-info">Link to Goal</a>
                 <a href="{{ url_for('tasks.complete', id=task.id) }}" class="btn btn-sm btn-success">Mark Complete</a>
             {% endif %}
+            <a href="{{ url_for('analytics.tasks_overview') }}" class="btn btn-sm btn-secondary">Task Analytics</a>
             <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteTaskModal">
                 Delete
             </button>

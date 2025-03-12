@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        <h3 class="card-title">An Error Occurred</h3>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-danger">
+            <p>{{ error }}</p>
+        </div>
+
+        <div class="mt-4">
+            <p>Sorry, an error occurred while processing your request. You can try:</p>
+            <ul>
+                <li>Refreshing the page</li>
+                <li>Going back to the <a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                <li>Visiting the <a href="{{ url_for('analytics.index') }}">Analytics Dashboard</a></li>
+            </ul>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">Return to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

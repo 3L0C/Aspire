@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Analytics Dashboard</h3>
+                    <div class="btn-group">
+                        <a href="{{ url_for('analytics.goals_overview') }}" class="btn btn-sm btn-outline-primary">Goal Analytics</a>
+                        <a href="{{ url_for('analytics.tasks_overview') }}" class="btn btn-sm btn-outline-primary">Task Analytics</a>
+                        <a href="{{ url_for('analytics.productivity') }}" class="btn btn-sm btn-outline-primary">Productivity</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>Welcome to your analytics dashboard. Here you can see insights into your goals and tasks performance.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Productivity Streak Card -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Productivity Streak</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="display-1 mb-3" id="streak-count">
+                        {{ analytics_data.productivity_streak.data }}
+                    </div>
+                    <p class="text-muted">Consecutive days with completed tasks</p>
+                    {% if analytics_data.productivity_streak.summary_stats.last_active_date %}
+                        <p class="text-muted">Last active: {{ analytics_data.productivity_streak.summary_stats.last_active_date }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Overall Progress Card -->
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Progress by Goal Type</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="goal-type-chart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Goal Progress Distribution -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title">{{ analytics_data.goal_progress.title }}</h5>
+                    <a href="{{ url_for('analytics.goals_overview') }}" class="btn btn-sm btn-outline-primary">Details</a>
+                </div>
+                <div class="card-body">
+                    <canvas id="goal-progress-chart" height="250"></canvas>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <div class="small text-muted">Total Goals</div>
+                            <div class="h5">{{ analytics_data.goal_progress.summary_stats.total_goals }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="small text-muted">Completed</div>
+                            <div class="h5">{{ analytics_data.goal_progress.summary_stats.completed_goals }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Completion Rate -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title">{{ analytics_data.task_completion.title }}</h5>
+                    <a href="{{ url_for('analytics.tasks_overview') }}" class="btn btn-sm btn-outline-primary">Details</a>
+                </div>
+                <div class="card-body">
+                    <canvas id="task-completion-chart" height="250"></canvas>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <div class="small text-muted">Today's Completed Tasks</div>
+                            <div class="h5">{{ analytics_data.task_completion.summary_stats.tasks_today }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="small text-muted">Daily Average</div>
+                            <div class="h5">{{ analytics_data.task_completion.summary_stats.average_per_day|round(1) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Tasks by Priority -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">{{ analytics_data.task_by_priority.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="task-priority-chart" height="250"></canvas>
+                    <div class="row mt-3">
+                        <div class="col">
+                            <div class="small text-muted">High Priority %</div>
+                            <div class="h5">{{ analytics_data.task_by_priority.summary_stats.high_priority_percentage|round(1) }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Productivity Insights / Recent Progress -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">Insights & Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% if analytics_data.productivity_streak.data < 2 %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Build your momentum</h6>
+                                <p class="mb-1 small">Complete at least one task today to start a productivity streak.</p>
+                            </div>
+                        {% else %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Keep your streak going!</h6>
+                                <p class="mb-1 small">You've been productive for {{ analytics_data.productivity_streak.data }} days. Don't break the chain!</p>
+                            </div>
+                        {% endif %}
+
+                        {% if analytics_data.goal_progress.summary_stats.total_goals > 0 %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Focus on making progress</h6>
+                                <p class="mb-1 small">You have {{ analytics_data.goal_progress.summary_stats.in_progress_goals }} goals in progress. Keep moving forward!</p>
+                            </div>
+                        {% else %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Set your first goal</h6>
+                                <p class="mb-1 small">Start by creating a meaningful goal to track your progress.</p>
+                            </div>
+                        {% endif %}
+
+                        {% if analytics_data.task_by_priority.summary_stats.high_priority_percentage > 50 %}
+                            <div class="list-group-item">
+                                <h6 class="mb-1">Review your priorities</h6>
+                                <p class="mb-1 small">{{ analytics_data.task_by_priority.summary_stats.high_priority_percentage|round(1) }}% of your tasks are high priority. Consider reassessing importance levels.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Goal Progress Distribution Chart
+        const goalProgressCtx = document.getElementById('goal-progress-chart');
+        new Chart(goalProgressCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ analytics_data.goal_progress.labels|tojson }},
+                datasets: [{
+                    data: {{ analytics_data.goal_progress.data|tojson }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(40, 167, 69, 0.7)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+
+        // Task Completion Chart
+        const taskCompletionCtx = document.getElementById('task-completion-chart');
+        new Chart(taskCompletionCtx, {
+            type: 'line',
+            data: {
+                labels: {{ analytics_data.task_completion.labels|tojson }},
+                datasets: [{
+                    label: 'Completed Tasks',
+                    data: {{ analytics_data.task_completion.data|map(attribute='count')|list|tojson }},
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        },
+                        ticks: {
+                            maxTicksLimit: 7
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: 'Tasks Completed'
+                        },
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+
+        // Task Priority Chart
+        const taskPriorityCtx = document.getElementById('task-priority-chart');
+        new Chart(taskPriorityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ analytics_data.task_by_priority.labels|tojson }},
+                datasets: [{
+                    data: {{ analytics_data.task_by_priority.data|tojson }},
+                    backgroundColor: [
+                        'rgba(220, 53, 69, 0.7)',   // High - red
+                        'rgba(255, 193, 7, 0.7)',   // Medium - yellow
+                        'rgba(23, 162, 184, 0.7)'   // Low - teal
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+
+        // Goal Type Chart
+        const goalTypeCtx = document.getElementById('goal-type-chart');
+        new Chart(goalTypeCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ analytics_data.progress_over_time.labels|tojson }},
+                datasets: [{
+                    label: 'Average Progress (%)',
+                    data: {{ analytics_data.progress_over_time.data|tojson }},
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(255, 206, 86, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Progress (%)'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

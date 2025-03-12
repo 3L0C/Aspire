@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">Import & Export Data</h3>
+        <a href="{{ url_for('dashboard.index') }}" class="btn btn-sm btn-secondary">Back to Dashboard</a>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Export Section -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title">Export Your Data</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Export all your goals and tasks to a file that you can import later or transfer to another system.</p>
+
+                        <form action="{{ url_for('data_management.export_data') }}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Export Format</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="format" id="formatJson" value="json" checked>
+                                    <label class="form-check-label" for="formatJson">
+                                        JSON Format
+                                    </label>
+                                    <small class="form-text text-muted d-block">Best for full data backup and transfer between systems.</small>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="radio" name="format" id="formatCsv" value="csv">
+                                    <label class="form-check-label" for="formatCsv">
+                                        CSV Format (ZIP archive)
+                                    </label>
+                                    <small class="form-text text-muted d-block">Useful for viewing and editing data in spreadsheet programs.</small>
+                                </div>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Export Data</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import Section -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title">Import Data</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Import previously exported data. This will add to your existing goals and tasks.</p>
+
+                        <form action="{{ url_for('data_management.import_data') }}" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="importFile" class="form-label">Select File</label>
+                                <input class="form-control" type="file" id="importFile" name="file" accept=".json,.zip">
+                                <div class="form-text">
+                                    Supported formats: JSON file (.json) or ZIP archive (.zip)
+                                </div>
+                            </div>
+
+                            <div class="alert alert-warning">
+                                <strong>Note:</strong> Importing data will add new goals and tasks. It will not overwrite or delete existing data.
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Import Data</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Data Management Tips -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Data Management Tips</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Regular Backups</h5>
+                                        <p class="card-text">Export your data regularly to ensure you have backup copies of your goals and progress.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Data Migration</h5>
+                                        <p class="card-text">Use the export/import features when moving to a new system or account.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">CSV Editing</h5>
+                                        <p class="card-text">CSV exports can be opened in Excel or Google Sheets for viewing or bulk editing.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

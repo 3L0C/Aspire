@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Goal Analytics</h3>
+                    <div class="btn-group">
+                        <a href="{{ url_for('analytics.index') }}" class="btn btn-sm btn-secondary">Back to Dashboard</a>
+                        <a href="{{ url_for('analytics.tasks_overview') }}" class="btn btn-sm btn-outline-primary">Task Analytics</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>This page shows detailed analytics about your goals and their progress over time.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Goal Progress Distribution -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">{{ goal_progress.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="goal-progress-chart" height="300"></canvas>
+                    <div class="row mt-4">
+                        <div class="col-md-3">
+                            <div class="small text-muted">Total Goals</div>
+                            <div class="h5">{{ goal_progress.summary_stats.total_goals }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="small text-muted">Completed</div>
+                            <div class="h5">{{ goal_progress.summary_stats.completed_goals }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="small text-muted">In Progress</div>
+                            <div class="h5">{{ goal_progress.summary_stats.in_progress_goals }}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="small text-muted">Avg Progress</div>
+                            <div class="h5">{{ goal_progress.summary_stats.average_progress|round(1) }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress by Goal Type -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">{{ progress_over_time.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="goal-type-chart" height="300"></canvas>
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="small text-muted">Long-term Goals</div>
+                            <div class="h5">{{ progress_over_time.summary_stats.long_term_count }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="small text-muted">Short-term Goals</div>
+                            <div class="h5">{{ progress_over_time.summary_stats.short_term_count }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="small text-muted">Milestones</div>
+                            <div class="h5">{{ progress_over_time.summary_stats.milestone_count }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Individual Goal Analysis -->
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Individual Goal Analysis</h5>
+                </div>
+                <div class="card-body">
+                    {% if goals %}
+                        <div class="mb-4">
+                            <p>Select a goal to view detailed analytics:</p>
+                            <div class="list-group">
+                                {% for goal in goals %}
+                                    <a href="{{ url_for('analytics.goal_detail', goal_id=goal.id) }}" class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <div>
+                                                <h6 class="mb-1">{{ goal.title }}</h6>
+                                                <small class="text-muted">
+                                                    {% if goal.type == 'long_term' %}
+                                                        Long-term Goal
+                                                    {% elif goal.type == 'short_term' %}
+                                                        Short-term Goal
+                                                    {% elif goal.type == 'milestone' %}
+                                                        Milestone
+                                                    {% else %}
+                                                        {{ goal.type|replace('_', ' ')|title }}
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+                                            <div>
+                                                <span class="badge {% if goal.is_completed %}bg-success{% else %}bg-primary{% endif %}">
+                                                    {{ "Completed" if goal.is_completed else goal.progress|round(1)|string + "%" }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {% if goal.target_date %}
+                                            <small class="text-muted">Target Date: {{ goal.target_date.strftime('%Y-%m-%d') }}</small>
+                                        {% endif %}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p>You don't have any goals yet. <a href="{{ url_for('goals.create') }}">Create your first goal</a> to see analytics.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Goal Progress Distribution Chart
+        const goalProgressCtx = document.getElementById('goal-progress-chart');
+        new Chart(goalProgressCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ goal_progress.labels|tojson }},
+                datasets: [{
+                    data: {{ goal_progress.data|tojson }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(40, 167, 69, 0.7)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.raw + ' goals';
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Goal Type Chart
+        const goalTypeCtx = document.getElementById('goal-type-chart').getContext('2d');
+        new Chart(goalTypeCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ progress_over_time.labels|tojson }},
+                datasets: [{
+                    label: 'Average Progress (%)',
+                    data: {{ progress_over_time.data|tojson }},
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(255, 206, 86, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Progress (%)'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

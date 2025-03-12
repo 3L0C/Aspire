@@ -45,6 +45,12 @@ def create_app():
     from app.presentation.tasks import tasks as tasks_blueprint
     app.register_blueprint(tasks_blueprint)
 
+    from app.presentation.analytics import analytics as analytics_blueprint
+    app.register_blueprint(analytics_blueprint)
+
+    from app.presentation.data_management import data_management as data_management_blueprint
+    app.register_blueprint(data_management_blueprint)
+
     # Set up URL routes
     @app.route('/')
     def index():

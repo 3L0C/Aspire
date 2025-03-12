@@ -7,6 +7,7 @@
         <div>
             <a href="{{ url_for('goals.edit', id=goal.id) }}" class="btn btn-sm btn-primary">Edit</a>
             <a href="{{ url_for('goals.link', id=goal.id) }}" class="btn btn-sm btn-info">Link to Goal</a>
+            <a href="{{ url_for('analytics.goal_detail', goal_id=goal.id) }}" class="btn btn-sm btn-success">Analytics</a>
             <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteGoalModal">
                 Delete
             </button>
