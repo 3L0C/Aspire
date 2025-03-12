@@ -230,8 +230,26 @@
                 <a href="{{ url_for('dashboard.overview') }}" class="btn btn-sm btn-outline-secondary">View Full Overview</a>
             </div>
             <div class="card-body">
-                <p>View the complete hierarchy of your goals and their relationships.</p>
-                <a href="{{ url_for('dashboard.overview') }}" class="btn btn-primary">Goal Network View</a>
+                <div class="row">
+                    <div class="col-md-8">
+                        <p>View the complete hierarchy of your goals and their relationships.</p>
+                        <p>The interactive goal network visualization allows you to:</p>
+                        <ul>
+                            <li>See all your goals and how they're connected</li>
+                            <li>Identify parent-child relationships</li>
+                            <li>Track progress across your goal hierarchy</li>
+                        </ul>
+                        <a href="{{ url_for('dashboard.overview') }}" class="btn btn-primary">
+                            <i class="bi bi-diagram-3"></i> Goal Network View
+                        </a>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div style="background-color: #f8f9fa; border-radius: 0.5rem; padding: 10px; height: 120px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-diagram-3" style="font-size: 3rem; color: #0d6efd;"></i>
+                        </div>
+                        <small class="text-muted mt-2 d-block">Interactive Goal Network Visualization</small>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -73,4 +73,6 @@ def create_app():
     from app.context_processors import inject_now
     app.context_processor(inject_now)
 
+    app.jinja_env.add_extension('jinja2.ext.do')
+
     return app

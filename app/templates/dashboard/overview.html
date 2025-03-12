@@ -7,7 +7,104 @@
         <a href="{{ url_for('dashboard.index') }}" class="btn btn-sm btn-secondary">Back to Dashboard</a>
     </div>
     <div class="card-body">
-        <h4 class="mb-4">Goal Network</h4>
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Goal Network</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if goals %}
+                            <!-- Network Visualization Container -->
+                            <div id="goal-network" style="width: 100%; height: 600px; border: 1px solid #ccc;"></div>
+
+                            <!-- Legend -->
+                            <div class="card mt-3">
+                                <div class="card-body">
+                                    <h6>Legend</h6>
+                                    <div class="d-flex flex-wrap">
+                                        <div class="legend-item">
+                                            <div class="legend-color" style="background-color: #8e44ad;"></div>
+                                            <small>Long-term Goal</small>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color" style="background-color: #2ecc71;"></div>
+                                            <small>Short-term Goal</small>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color" style="background-color: #f39c12;"></div>
+                                            <small>Milestone</small>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color" style="background-color: #e74c3c;"></div>
+                                            <small>Task</small>
+                                        </div>
+                                        <div class="legend-item">
+                                            <i class="bi bi-arrows-angle-expand me-1"></i>
+                                            <small>Size indicates progress</small>
+                                        </div>
+                                        <div class="legend-item">
+                                            <i class="bi bi-arrow-down me-1"></i>
+                                            <small>Arrows show relationships</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Network Controls -->
+                            <div class="card mt-3 mb-3">
+                                <div class="card-body">
+                                    <h6>Visualization Controls</h6>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="mb-2">
+                                                <label for="layout-select" class="form-label">Layout</label>
+                                                <select id="layout-select" class="form-select form-select-sm">
+                                                    <option value="hierarchical">Hierarchical</option>
+                                                    <option value="force">Force-directed</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-2">
+                                                <label for="node-spacing" class="form-label">Node Spacing</label>
+                                                <input type="range" class="form-range" min="100" max="250" value="150" id="node-spacing">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-2">
+                                                <label class="form-label">Show Tasks</label>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="show-tasks">
+                                                    <label class="form-check-label" for="show-tasks">Include tasks</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="btn-group mt-4">
+                                                <button id="zoom-in" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="bi bi-zoom-in"></i>
+                                                </button>
+                                                <button id="zoom-out" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="bi bi-zoom-out"></i>
+                                                </button>
+                                                <button id="fit-all" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="bi bi-fullscreen"></i> Fit
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <p>You don't have any goals yet. <a href="{{ url_for('goals.create') }}">Create your first goal</a> to visualize your goal network!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
 
         {% if goals %}
             <div class="row">
@@ -61,7 +158,7 @@
                                                                     <small>Priority: {{ milestone.priority }}</small>
                                                                 </div>
                                                                 <span class="badge {% if milestone.is_completed %}bg-success{% else %}bg-secondary{% endif %}">
-                                                                    {{ 'Completed' if milestone.is_completed else milestone.progress|round(1) + '%' }}
+                                                                    {{ 'Completed' if milestone.is_completed else milestone.progress|round(1) ~ '%' }}
                                                                 </span>
                                                             </div>
                                                         </li>
@@ -181,4 +278,256 @@
         {% endif %}
     </div>
 </div>
+
+<style>
+    #goal-network {
+        width: 100%;
+        height: 600px;
+        border: 1px solid #ccc;
+        background-color: #fafafa;
+    }
+
+    /* Tooltip styling improvements */
+    .vis-tooltip {
+        position: absolute;
+        padding: 10px;
+        background-color: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        border-radius: 4px;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #333;
+        z-index: 1000;
+        max-width: 300px;
+        white-space: normal;
+    }
+
+    /* Network canvas area styling */
+    .vis-network {
+        outline: none;
+    }
+
+    /* Legend styling improvements */
+    .legend-item {
+        display: inline-flex;
+        align-items: center;
+        margin-right: 15px;
+        margin-bottom: 10px;
+    }
+
+    .legend-color {
+        width: 15px;
+        height: 15px;
+        border-radius: 3px;
+        margin-right: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/vis-data@7.1.9/peer/umd/vis-data.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.9/peer/umd/vis-network.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vis-network@9.1.9/styles/vis-network.min.css">
+<script>
+    // Create a function to load network data
+    function loadNetworkData(includeTasks = false) {
+        // Construct the URL with query parameter
+        const url = new URL('{{ url_for('dashboard.api_goal_network') }}', window.location.origin);
+        if (includeTasks) {
+            url.searchParams.append('include_tasks', 'true');
+        }
+
+        // Fetch the data
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                // Create a network visualization
+                const container = document.getElementById('goal-network');
+
+                // Create the datasets
+                const nodes = new vis.DataSet(data.nodes);
+                const edges = new vis.DataSet(data.edges);
+
+                // Configuration options
+                const options = {
+                    nodes: {
+                        font: {
+                            size: 14,
+                            face: 'Arial',
+                            multi: 'html',
+                            bold: {
+                                color: '#343a40',
+                                size: 14,
+                            }
+                        },
+                        borderWidth: 2,
+                        shadow: true,
+                        shape: 'box',
+                        margin: 10,
+                    },
+                    edges: {
+                        width: 2,
+                        shadow: true,
+                        smooth: {
+                            type: 'cubicBezier',
+                            forceDirection: 'vertical'
+                        }
+                    },
+                    physics: {
+                        // Hierarchical layout for clearer parent-child relationships
+                        solver: 'hierarchicalRepulsion',
+                        hierarchicalRepulsion: {
+                            nodeDistance: 120,
+                            avoidOverlap: 1
+                        },
+                        stabilization: {
+                            iterations: 100
+                        }
+                    },
+                    interaction: {
+                        hover: true,
+                        navigationButtons: true,
+                        keyboard: true,
+                        tooltipDelay: 200
+                    },
+                    layout: {
+                        hierarchical: {
+                            direction: 'UD', // Up to Down
+                            sortMethod: 'directed',
+                            levelSeparation: 150,
+                            nodeSpacing: 150
+                        }
+                    }
+                };
+
+                // Controls for network manipulation
+                window.network = new vis.Network(container, { nodes: nodes, edges: edges }, options);
+
+                // Apply current layout setting
+                const layoutSelect = document.getElementById('layout-select');
+                if (layoutSelect.value === 'force') {
+                    window.network.setOptions({
+                        layout: {
+                            hierarchical: {
+                                enabled: false
+                            }
+                        },
+                        physics: {
+                            solver: 'forceAtlas2Based',
+                            forceAtlas2Based: {
+                                gravitationalConstant: -50,
+                                centralGravity: 0.01,
+                                springLength: 100,
+                                springConstant: 0.08
+                            }
+                        }
+                    });
+                }
+
+                // Add click event to navigate to goal details
+                window.network.on('click', function(params) {
+                    if (params.nodes.length === 1) {
+                        const nodeId = params.nodes[0];
+                        // Only navigate if it's a goal node (not a task node)
+                        if (!String(nodeId).startsWith('task_')) {
+                            window.location.href = `/goals/${nodeId}`;
+                        }
+                    }
+                });
+
+                // Custom hover tooltip
+                window.network.on('hoverNode', function(params) {
+                    const nodeId = params.node;
+                    const node = nodes.get(nodeId);
+                    console.log('Hovering over node:', node);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching goal network data:', error);
+                document.getElementById('goal-network').innerHTML =
+                    '<div class="alert alert-danger">' +
+                    '<strong>Error loading goal network visualization.</strong><br>' +
+                    'Details: ' + (error.message || 'Unknown error') + '<br>' +
+                    'Please try refreshing the page or contact support if the problem persists.' +
+                    '</div>';
+            });
+    }
+
+    // When DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if there are goals to visualize
+        {% if goals %}
+            // Initial load without tasks
+            loadNetworkData(false);
+
+            // Layout control
+            document.getElementById('layout-select').addEventListener('change', function(e) {
+                const layout = e.target.value;
+                if (layout === 'hierarchical') {
+                    window.network.setOptions({
+                        layout: {
+                            hierarchical: {
+                                enabled: true,
+                                direction: 'UD',
+                                sortMethod: 'directed',
+                                levelSeparation: 150,
+                                nodeSpacing: parseInt(document.getElementById('node-spacing').value)
+                            }
+                        }
+                    });
+                } else {
+                    window.network.setOptions({
+                        layout: {
+                            hierarchical: {
+                                enabled: false
+                            }
+                        },
+                        physics: {
+                            solver: 'forceAtlas2Based',
+                            forceAtlas2Based: {
+                                gravitationalConstant: -50,
+                                centralGravity: 0.01,
+                                springLength: 100,
+                                springConstant: 0.08
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Node spacing control
+            document.getElementById('node-spacing').addEventListener('input', function(e) {
+                const spacing = parseInt(e.target.value);
+                if (document.getElementById('layout-select').value === 'hierarchical') {
+                    window.network.setOptions({
+                        layout: {
+                            hierarchical: {
+                                nodeSpacing: spacing
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Task display toggle
+            document.getElementById('show-tasks').addEventListener('change', function(e) {
+                loadNetworkData(e.target.checked);
+            });
+
+            // Zoom controls
+            document.getElementById('zoom-in').addEventListener('click', function() {
+                window.network.zoom(1.2);
+            });
+
+            document.getElementById('zoom-out').addEventListener('click', function() {
+                window.network.zoom(0.8);
+            });
+
+            document.getElementById('fit-all').addEventListener('click', function() {
+                window.network.fit();
+            });
+        {% endif %}
+    });
+</script>
 {% endblock %}
