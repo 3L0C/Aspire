@@ -117,6 +117,18 @@
                         {% endif %}
                     {% endif %}
 
+                    <div class="mb-3">
+                        <label for="color" class="form-label">Goal Color</label>
+                        <div class="input-group">
+                            <span class="input-group-text" id="color-preview" style="background-color: #3498db; width: 40px;">&nbsp;</span>
+                            {{ form.color(class="form-control", type="color", value="#3498db") }}
+                        </div>
+                        <div class="form-text">Choose a color to represent this goal in visualizations and lists.</div>
+                        {% for error in form.color.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
                     <div class="d-grid gap-2">
                         {{ form.submit(class="btn btn-primary") }}
                         <a href="{{ url_for('goals.index') }}" class="btn btn-secondary">Cancel</a>
@@ -126,4 +138,13 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Update color preview when color picker changes
+    document.getElementById('color').addEventListener('input', function() {
+        document.getElementById('color-preview').style.backgroundColor = this.value;
+    });
+</script>
 {% endblock %}

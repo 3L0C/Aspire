@@ -10,6 +10,7 @@ class GoalForm(FlaskForm):
     description = TextAreaField('Description', validators=[Optional(), Length(max=500)])
     start_date = DateField('Start Date', validators=[Optional()], format='%Y-%m-%d')
     target_date = DateField('Target Date', validators=[Optional()], format='%Y-%m-%d')
+    color = StringField('Color', validators=[Optional()], default="#3498db")
     submit = SubmitField('Save Goal')
 
 

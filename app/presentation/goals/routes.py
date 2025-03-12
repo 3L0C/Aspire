@@ -43,7 +43,8 @@ def create():
             description=form.description.data,
             start_date=form.start_date.data,
             target_date=form.target_date.data,
-            user_id=current_user.id
+            user_id=current_user.id,
+            color=form.color.data
         )
 
         # Set additional attributes based on goal type
@@ -142,11 +143,16 @@ def update_progress(id):
     goal = Goal.query.filter_by(id=id, user_id=current_user.id).first_or_404()
 
     progress = request.form.get('progress', type=float)
+    is_completed = request.form.get('is_completed') == 'true'
+
     if progress is not None and 0 <= progress <= 100:
         goal.progress = progress
-        if progress >= 100:
-            goal.is_completed = True
+
+        # Allow manual completion status control
+        goal.is_completed = is_completed
+
         db.session.commit()
-        flash(f'Progress for "{goal.title}" updated to {progress}%')
+        completion_status = "completed" if is_completed else "in progress"
+        flash(f'Goal "{goal.title}" updated to {progress}% and marked as {completion_status}')
 
     return redirect(url_for('goals.view', id=goal.id))

@@ -18,23 +18,39 @@
             <div class="col-md-8">
                 <h4>Progress</h4>
                 <div class="progress" style="height: 20px;">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ goal.progress }}%;"
-                         aria-valuenow="{{ goal.progress }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar" role="progressbar"
+                        style="width: {{ goal.progress }}%; background-color: {{ goal.color or '#3498db' }};"
+                        aria-valuenow="{{ goal.progress }}" aria-valuemin="0" aria-valuemax="100">
                         {{ goal.progress|round(1) }}%
                     </div>
                 </div>
 
-                {% if not goal.is_completed %}
-                    <div class="mt-3">
-                        <form action="{{ url_for('goals.update_progress', id=goal.id) }}" method="POST" class="d-flex align-items-center">
-                            <div class="input-group" style="max-width: 200px;">
-                                <input type="number" name="progress" class="form-control" min="0" max="100" step="5" value="{{ goal.progress }}">
-                                <span class="input-group-text">%</span>
-                            </div>
-                            <button type="submit" class="btn btn-primary ms-2">Update Progress</button>
-                        </form>
-                    </div>
-                {% endif %}
+                <div class="mt-3">
+                    <form action="{{ url_for('goals.update_progress', id=goal.id) }}" method="POST" class="d-flex align-items-center">
+                        <div class="input-group" style="max-width: 200px;">
+                            <input type="number" name="progress" class="form-control" min="0" max="100" step="5" value="{{ goal.progress }}">
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <div class="form-check ms-3">
+                            <input class="form-check-input" type="checkbox" name="is_completed" value="true" id="is-completed" {% if goal.is_completed %}checked{% endif %}>
+                            <label class="form-check-label" for="is-completed">
+                                Mark as Completed
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary ms-2">Update Progress</button>
+                    </form>
+                </div>
+                <!-- {% if not goal.is_completed %}
+                                    <div class="mt-3">
+                                        <form action="{{ url_for('goals.update_progress', id=goal.id) }}" method="POST" class="d-flex align-items-center">
+                                            <div class="input-group" style="max-width: 200px;">
+                                                <input type="number" name="progress" class="form-control" min="0" max="100" step="5" value="{{ goal.progress }}">
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary ms-2">Update Progress</button>
+                                        </form>
+                                    </div>
+                                {% endif %} -->
             </div>
             <div class="col-md-4">
                 <div class="card">
@@ -110,6 +126,14 @@
                                     <span>{{ 'Yes' if goal.is_gateway else 'No' }}</span>
                                 </li>
                             {% endif %}
+
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Color:</span>
+                                <span>
+                                    <span class="badge" style="background-color: {{ goal.color or '#3498db' }}; width: 50px;">&nbsp;</span>
+                                </span>
+                            </li>
+
                         </ul>
                     </div>
                 </div>
@@ -137,7 +161,7 @@
                                 {% for parent in goal.parent_goals %}
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                         <div>
-                                            <a href="{{ url_for('goals.view', id=parent.id) }}">{{ parent.title }}</a>
+                                            <a href="{{ url_for('goals.view', id=parent.id) }}" style="color: {{ parent.color or '#3498db' }};">{{ parent.title }}</a>
                                             <div>
                                                 <small class="text-muted">
                                                     Type:
@@ -183,7 +207,7 @@
                                 {% for child in goal.child_goals %}
                                     <li class="list-group-item d-flex justify-content-between align-items-center">
                                         <div>
-                                            <a href="{{ url_for('goals.view', id=child.id) }}">{{ child.title }}</a>
+                                            <a href="{{ url_for('goals.view', id=child.id) }}" style="color: {{ child.color or '#3498db' }};">{{ child.title }}</a>
                                             <div>
                                                 <small class="text-muted">
                                                     Type:

@@ -119,13 +119,14 @@ def api_goal_network():
         processed_nodes.add(goal.id)
 
         # Determine node color based on goal type
-        color = "#3498db"  # Default blue
-        if goal.type == 'long_term':
-            color = "#8e44ad"  # Purple
-        elif goal.type == 'short_term':
-            color = "#2ecc71"  # Green
-        elif goal.type == 'milestone':
-            color = "#f39c12"  # Orange
+        color = goal.color if hasattr(goal, 'color') and goal.color else ""  # Default blue
+        if color == "":
+            if goal.type == 'long_term':
+                color = "#8e44ad"  # Purple
+            elif goal.type == 'short_term':
+                color = "#2ecc71"  # Green
+            elif goal.type == 'milestone':
+                color = "#f39c12"  # Orange
 
         # Determine size based on importance/progress
         size = 25 + (goal.progress / 4)  # Slightly larger base size
@@ -137,9 +138,7 @@ def api_goal_network():
             display_label = display_label[:17] + '...'
 
         # Create node with full information in tooltip
-        tooltip = f"{goal.title}<br>Type: {goal.type.replace('_', ' ').title()}<br>Progress: {goal.progress:.1f}%"
-        if goal.target_date:
-            tooltip += f"<br>Target: {goal.target_date.strftime('%Y-%m-%d')}"
+        tooltip = f"{goal.title}"
 
         nodes.append({
             'id': goal.id,

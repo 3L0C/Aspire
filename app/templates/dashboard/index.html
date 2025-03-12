@@ -83,12 +83,13 @@
                         {% for goal in long_term_goals %}
                             <a href="{{ url_for('goals.view', id=goal.id) }}" class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between">
-                                    <h6 class="mb-1">{{ goal.title }}</h6>
+                                    <h6 class="mb-1" style="color: {{ goal.color or '#3498db' }};">{{ goal.title }}</h6>
                                     <small>{{ goal.timeframe }}</small>
                                 </div>
                                 <div class="progress mt-2" style="height: 5px;">
-                                    <div class="progress-bar" role="progressbar" style="width: {{ goal.progress }}%;"
-                                         aria-valuenow="{{ goal.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <div class="progress-bar" role="progressbar"
+                                        style="width: {{ goal.progress }}%; background-color: {{ goal.color or '#3498db' }};"
+                                        aria-valuenow="{{ goal.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
                                 <small>Progress: {{ goal.progress|round(1) }}%</small>
                             </a>
@@ -227,7 +228,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">Goal Overview</h5>
-                <a href="{{ url_for('dashboard.overview') }}" class="btn btn-sm btn-outline-secondary">View Full Overview</a>
+                <!-- <a href="{{ url_for('dashboard.overview') }}" class="btn btn-sm btn-outline-secondary">View Full Overview</a> -->
             </div>
             <div class="card-body">
                 <div class="row">

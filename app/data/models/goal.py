@@ -27,6 +27,7 @@ class Goal(BaseEntity):
     progress = db.Column(db.Float, default=0.0)  # 0-100 percentage
     is_completed = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    color = db.Column(db.String(7), default="#3498db")
 
     # Discriminator for inheritance
     type = db.Column(db.String(20))

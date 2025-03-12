@@ -196,3 +196,20 @@ def complete(id):
         return redirect(url_for('tasks.index'))
 
     return render_template('tasks/complete.html', form=form, task=task)
+
+@tasks.route('/<int:id>/incomplete', methods=['POST'])
+@login_required
+def mark_incomplete(id):
+    """Mark a task as incomplete."""
+    task = Task.query.filter_by(id=id, user_id=current_user.id).first_or_404()
+
+    if not task.is_completed:
+        flash('This task is already marked as incomplete.')
+        return redirect(url_for('tasks.view', id=task.id))
+
+    task.is_completed = False
+    task.actual_duration = None  # Clear the actual duration
+    db.session.commit()
+    flash(f'Task "{task.title}" marked as incomplete!')
+
+    return redirect(url_for('tasks.view', id=task.id))
