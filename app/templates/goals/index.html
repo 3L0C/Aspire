@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">My Goals</h3>
+        <div class="btn-group">
+            <a href="{{ url_for('goals.create', type='long_term') }}" class="btn btn-sm btn-success">Add Long-term Goal</a>
+            <a href="{{ url_for('goals.create', type='short_term') }}" class="btn btn-sm btn-primary">Add Short-term Goal</a>
+            <a href="{{ url_for('goals.create', type='milestone') }}" class="btn btn-sm btn-secondary">Add Milestone</a>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if goals %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Target Date</th>
+                            <th>Progress</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for goal in goals %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('goals.view', id=goal.id) }}">{{ goal.title }}</a>
+                                </td>
+                                <td>
+                                    {% if goal.type == 'long_term' %}
+                                        <span class="badge bg-primary">Long-term</span>
+                                    {% elif goal.type == 'short_term' %}
+                                        <span class="badge bg-info">Short-term</span>
+                                    {% elif goal.type == 'milestone' %}
+                                        <span class="badge bg-warning">Milestone</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ goal.type|replace('_', ' ')|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if goal.target_date %}
+                                        {{ goal.target_date.strftime('%Y-%m-%d') }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar" role="progressbar" style="width: {{ goal.progress }}%;"
+                                             aria-valuenow="{{ goal.progress }}" aria-valuemin="0" aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <small>{{ goal.progress|round(1) }}%</small>
+                                </td>
+                                <td>
+                                    {% if goal.is_completed %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">In Progress</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('goals.view', id=goal.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                        <a href="{{ url_for('goals.edit', id=goal.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                data-bs-toggle="modal" data-bs-target="#deleteGoalModal{{ goal.id }}">
+                                            Delete
+                                        </button>
+                                    </div>
+
+                                    <!-- Delete Confirmation Modal -->
+                                    <div class="modal fade" id="deleteGoalModal{{ goal.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Confirm Delete</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to delete the goal "{{ goal.title }}"?</p>
+                                                    <p class="text-danger">This action cannot be undone.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form action="{{ url_for('goals.delete', id=goal.id) }}" method="POST">
+                                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p>You don't have any goals yet. Create your first goal to get started!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

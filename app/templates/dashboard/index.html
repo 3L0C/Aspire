@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0">Welcome, {{ current_user.username }}</h3>
+                <div>
+                    <a href="{{ url_for('dashboard.quick_add_task') }}" class="btn btn-sm btn-primary">Quick Add Task</a>
+                    <a href="{{ url_for('goals.create') }}" class="btn btn-sm btn-success">New Goal</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Goal Progress</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="progress mb-3">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ overall_progress }}%;"
+                                         aria-valuenow="{{ overall_progress }}" aria-valuemin="0" aria-valuemax="100">
+                                        {{ overall_progress|round(1) }}%
+                                    </div>
+                                </div>
+                                <p>Overall Goal Completion: {{ overall_progress|round(1) }}%</p>
+                                <p>Task Completion Rate: {{ task_completion_rate|round(1) }}%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Quick Stats</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <h6>Long-term Goals</h6>
+                                        <h3>{{ long_term_goals|length }}</h3>
+                                    </div>
+                                    <div class="col-6">
+                                        <h6>Short-term Goals</h6>
+                                        <h3>{{ short_term_goals|length }}</h3>
+                                    </div>
+                                    <div class="col-12 mt-3">
+                                        <h6>Upcoming Tasks</h6>
+                                        <h3>{{ upcoming_tasks|length }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Long-term Goals</h5>
+                <a href="{{ url_for('goals.create', type='long_term') }}" class="btn btn-sm btn-outline-primary">Add Long-term Goal</a>
+            </div>
+            <div class="card-body">
+                {% if long_term_goals %}
+                    <div class="list-group">
+                        {% for goal in long_term_goals %}
+                            <a href="{{ url_for('goals.view', id=goal.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ goal.title }}</h6>
+                                    <small>{{ goal.timeframe }}</small>
+                                </div>
+                                <div class="progress mt-2" style="height: 5px;">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ goal.progress }}%;"
+                                         aria-valuenow="{{ goal.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small>Progress: {{ goal.progress|round(1) }}%</small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No long-term goals yet. Add your first one!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Short-term Goals</h5>
+                <a href="{{ url_for('goals.create', type='short_term') }}" class="btn btn-sm btn-outline-primary">Add Short-term Goal</a>
+            </div>
+            <div class="card-body">
+                {% if short_term_goals %}
+                    <div class="list-group">
+                        {% for goal in short_term_goals %}
+                            <a href="{{ url_for('goals.view', id=goal.id) }}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ goal.title }}</h6>
+                                    <span class="badge {% if goal.priority == 'High' %}bg-danger{% elif goal.priority == 'Medium' %}bg-warning{% else %}bg-info{% endif %}">
+                                        {{ goal.priority }}
+                                    </span>
+                                </div>
+                                <div class="progress mt-2" style="height: 5px;">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ goal.progress }}%;"
+                                         aria-valuenow="{{ goal.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <small>Progress: {{ goal.progress|round(1) }}%</small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No short-term goals yet. Add your first one!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Upcoming Tasks</h5>
+                <a href="{{ url_for('tasks.create') }}" class="btn btn-sm btn-outline-primary">Add Task</a>
+            </div>
+            <div class="card-body">
+                {% if upcoming_tasks %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Due Date</th>
+                                    <th>Priority</th>
+                                    <th>Related Goals</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in upcoming_tasks %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('tasks.view', id=task.id) }}">{{ task.title }}</a>
+                                        </td>
+                                        <td>
+                                            {% if task.due_date %}
+                                                {{ task.due_date.strftime('%Y-%m-%d') }}
+                                            {% else %}
+                                                No date
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if task.priority == 'High' %}bg-danger{% elif task.priority == 'Medium' %}bg-warning{% else %}bg-info{% endif %}">
+                                                {{ task.priority }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if task.related_goals.count() > 0 %}
+                                                {% for goal in task.related_goals %}
+                                                    <span class="badge bg-secondary">{{ goal.title }}</span>
+                                                {% endfor %}
+                                            {% else %}
+                                                <small class="text-muted">None</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('tasks.complete', id=task.id) }}" class="btn btn-sm btn-success">Complete</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No upcoming tasks. Add your first one!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Recently Completed</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_completed_tasks %}
+                    <ul class="list-group">
+                        {% for task in recent_completed_tasks %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">{{ task.title }}</h6>
+                                    <small class="text-muted">Completed {{ task.updated_at.strftime('%Y-%m-%d') }}</small>
+                                </div>
+                                <span class="badge bg-success rounded-pill">Done</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No completed tasks yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Goal Overview</h5>
+                <a href="{{ url_for('dashboard.overview') }}" class="btn btn-sm btn-outline-secondary">View Full Overview</a>
+            </div>
+            <div class="card-body">
+                <p>View the complete hierarchy of your goals and their relationships.</p>
+                <a href="{{ url_for('dashboard.overview') }}" class="btn btn-primary">Goal Network View</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

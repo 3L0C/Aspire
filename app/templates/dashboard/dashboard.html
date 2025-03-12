@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Dashboard</h3>
+        </div>
+        <div class="card-body">
+            <h4>Hello, {{ current_user.username }}!</h4>
+            <p>Welcome to Aspire. This is your goal tracking dashboard.</p>
+            <p>This is a simple placeholder. The full dashboard with goal and task management will be implemented in future iterations.</p>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row py-5">
+    <div class="col-md-8 offset-md-2 text-center">
+        <h1 class="display-4">Welcome to Aspire</h1>
+        <p class="lead">A goal tracking application based on Goal-Setting Theory.</p>
+        <hr class="my-4">
+        <p>Aspire helps you track how your day-to-day actions contribute to your long-term goals.</p>
+
+        {% if current_user.is_authenticated %}
+            <div class="mt-5">
+                <a class="btn btn-primary btn-lg" href="{{ url_for('dashboard.index') }}" role="button">Go to Dashboard</a>
+                <a class="btn btn-success btn-lg" href="{{ url_for('goals.create') }}" role="button">Create a Goal</a>
+            </div>
+        {% else %}
+            <div class="mt-5">
+                <a class="btn btn-primary btn-lg" href="{{ url_for('auth.login') }}" role="button">Login</a>
+                <a class="btn btn-secondary btn-lg" href="{{ url_for('auth.register') }}" role="button">Register</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row py-5">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h3 class="card-title">Set Specific Goals</h3>
+                <p class="card-text">Research shows that specific, challenging goals lead to better performance than vague "do your best" goals.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h3 class="card-title">Track Your Progress</h3>
+                <p class="card-text">Break down large goals into manageable tasks and track your progress over time to stay motivated.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h3 class="card-title">Achieve More</h3>
+                <p class="card-text">See how your daily actions contribute to your bigger goals, helping you stay focused on what matters.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

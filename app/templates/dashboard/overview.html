@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">Goal Overview</h3>
+        <a href="{{ url_for('dashboard.index') }}" class="btn btn-sm btn-secondary">Back to Dashboard</a>
+    </div>
+    <div class="card-body">
+        <h4 class="mb-4">Goal Network</h4>
+
+        {% if goals %}
+            <div class="row">
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Long-term Goals</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                {% for goal in goals %}
+                                    {% if goal.type == 'long_term' %}
+                                        <li class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-1">{{ goal.title }}</h5>
+                                                <span class="badge bg-primary">{{ goal.progress|round(1) }}%</span>
+                                            </div>
+
+                                            <div class="progress mb-3" style="height: 10px;">
+                                                <div class="progress-bar bg-success" role="progressbar"
+                                                    style="width: {{ goal.progress }}%;"
+                                                    aria-valuenow="{{ goal.progress }}"
+                                                    aria-valuemin="0" aria-valuemax="100">
+                                                </div>
+                                            </div>
+
+                                            {% if goal.timeframe %}
+                                                <p><strong>Timeframe:</strong> {{ goal.timeframe }}</p>
+                                            {% endif %}
+
+                                            {% if goal.description %}
+                                                <p class="mb-3">{{ goal.description }}</p>
+                                            {% endif %}
+
+                                            <!-- Related milestones -->
+                                            {% set milestones = [] %}
+                                            {% for child in goal.child_goals %}
+                                                {% if child.type == 'milestone' %}
+                                                    {% do milestones.append(child) %}
+                                                {% endif %}
+                                            {% endfor %}
+
+                                            {% if milestones %}
+                                                <h6 class="mt-3">Milestones:</h6>
+                                                <ul class="list-group mt-2">
+                                                    {% for milestone in milestones %}
+                                                        <li class="list-group-item">
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <div>
+                                                                    <h6 class="mb-0">{{ milestone.title }}</h6>
+                                                                    <small>Priority: {{ milestone.priority }}</small>
+                                                                </div>
+                                                                <span class="badge {% if milestone.is_completed %}bg-success{% else %}bg-secondary{% endif %}">
+                                                                    {{ 'Completed' if milestone.is_completed else milestone.progress|round(1) + '%' }}
+                                                                </span>
+                                                            </div>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% endif %}
+
+                                            <!-- Related tasks -->
+                                            {% if goal.related_tasks %}
+                                                <h6 class="mt-3">Related Tasks:</h6>
+                                                <ul class="list-group mt-2">
+                                                    {% for task in goal.related_tasks %}
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <h6 class="mb-0">{{ task.title }}</h6>
+                                                                <small>Due: {{ task.due_date.strftime('%Y-%m-%d') if task.due_date else 'No date' }}</small>
+                                                            </div>
+                                                            <span class="badge {% if task.is_completed %}bg-success{% else %}bg-secondary{% endif %}">
+                                                                {{ 'Completed' if task.is_completed else 'Pending' }}
+                                                            </span>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% endif %}
+
+                                            <div class="mt-3">
+                                                <a href="{{ url_for('goals.view', id=goal.id) }}" class="btn btn-sm btn-primary">View Details</a>
+                                            </div>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Short-term Goals</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group">
+                                {% for goal in goals %}
+                                    {% if goal.type == 'short_term' and goal.type != 'milestone' %}
+                                        <li class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-1">{{ goal.title }}</h5>
+                                                <div>
+                                                    <span class="badge {% if goal.priority == 'High' %}bg-danger{% elif goal.priority == 'Medium' %}bg-warning{% else %}bg-info{% endif %} me-2">
+                                                        {{ goal.priority }}
+                                                    </span>
+                                                    <span class="badge bg-primary">{{ goal.progress|round(1) }}%</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="progress mb-3" style="height: 10px;">
+                                                <div class="progress-bar bg-success" role="progressbar"
+                                                    style="width: {{ goal.progress }}%;"
+                                                    aria-valuenow="{{ goal.progress }}"
+                                                    aria-valuemin="0" aria-valuemax="100">
+                                                </div>
+                                            </div>
+
+                                            {% if goal.description %}
+                                                <p class="mb-3">{{ goal.description }}</p>
+                                            {% endif %}
+
+                                            <!-- Parent goals -->
+                                            {% if goal.parent_goals.count() > 0 %}
+                                                <h6 class="mt-3">Contributing to:</h6>
+                                                <ul class="list-group mt-2">
+                                                    {% for parent in goal.parent_goals %}
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <h6 class="mb-0">{{ parent.title }}</h6>
+                                                                <small>Type: {{ parent.type|replace('_', ' ')|title }}</small>
+                                                            </div>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% endif %}
+
+                                            <!-- Related tasks -->
+                                            {% if goal.related_tasks %}
+                                                <h6 class="mt-3">Related Tasks:</h6>
+                                                <ul class="list-group mt-2">
+                                                    {% for task in goal.related_tasks %}
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <h6 class="mb-0">{{ task.title }}</h6>
+                                                                <small>Due: {{ task.due_date.strftime('%Y-%m-%d') if task.due_date else 'No date' }}</small>
+                                                            </div>
+                                                            <span class="badge {% if task.is_completed %}bg-success{% else %}bg-secondary{% endif %}">
+                                                                {{ 'Completed' if task.is_completed else 'Pending' }}
+                                                            </span>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% endif %}
+
+                                            <div class="mt-3">
+                                                <a href="{{ url_for('goals.view', id=goal.id) }}" class="btn btn-sm btn-primary">View Details</a>
+                                            </div>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p>You don't have any goals yet. <a href="{{ url_for('goals.create') }}">Create your first goal</a> to get started!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

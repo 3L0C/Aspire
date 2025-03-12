@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row py-4">
+    <div class="col-md-8 offset-md-2">
+        <h1 class="display-4 mb-4">About Aspire</h1>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2>Goal-Setting Theory</h2>
+                <p>Aspire is built on the principles of Goal-Setting Theory (GST), a psychological theory developed by Edwin Locke and Gary Latham. Their research showed that people who set specific, challenging goals perform better than those with vague or easy goals.</p>
+
+                <p>Key principles of Goal-Setting Theory include:</p>
+                <ul>
+                    <li><strong>Clarity:</strong> Goals should be clear and specific</li>
+                    <li><strong>Challenge:</strong> Goals should be challenging but achievable</li>
+                    <li><strong>Commitment:</strong> People must be committed to their goals</li>
+                    <li><strong>Feedback:</strong> Regular feedback on progress is essential</li>
+                    <li><strong>Task Complexity:</strong> Complex goals may need to be broken down</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2>How Aspire Works</h2>
+                <p>Aspire helps you implement Goal-Setting Theory in your life by:</p>
+
+                <ul>
+                    <li>Allowing you to set specific long-term and short-term goals</li>
+                    <li>Breaking complex goals down into manageable milestones</li>
+                    <li>Connecting your daily tasks to your bigger goals</li>
+                    <li>Providing visual feedback on your progress</li>
+                    <li>Helping you understand the relationships between different goals</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h2>Getting Started</h2>
+                <p>To get the most out of Aspire:</p>
+
+                <ol>
+                    <li>Start by creating your long-term goals - what do you want to achieve in the coming years?</li>
+                    <li>Break these down into short-term goals that can be achieved in weeks or months</li>
+                    <li>For complex goals, add milestones to track significant achievements along the way</li>
+                    <li>Create daily or weekly tasks that contribute to your goals</li>
+                    <li>Use the dashboard to monitor your progress and stay motivated</li>
+                </ol>
+
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('dashboard.index') if current_user.is_authenticated else url_for('auth.register') }}" class="btn btn-primary">
+                        {{ 'Go to Dashboard' if current_user.is_authenticated else 'Register Now' }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">My Tasks</h3>
+        <div class="btn-group">
+            <a href="{{ url_for('tasks.create', type='one_time') }}" class="btn btn-sm btn-success">Add One-time Task</a>
+            <a href="{{ url_for('tasks.create', type='recurring') }}" class="btn btn-sm btn-primary">Add Recurring Task</a>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if tasks %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Due Date</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Related Goals</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                            <tr class="{% if task.is_completed %}table-success{% endif %}">
+                                <td>
+                                    <a href="{{ url_for('tasks.view', id=task.id) }}">{{ task.title }}</a>
+                                </td>
+                                <td>
+                                    {% if task.type == 'one_time' %}
+                                        <span class="badge bg-info">One-time</span>
+                                    {% elif task.type == 'recurring' %}
+                                        <span class="badge bg-primary">Recurring</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ task.type|replace('_', ' ')|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if task.due_date %}
+                                        {{ task.due_date.strftime('%Y-%m-%d') }}
+                                    {% else %}
+                                        No date
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge {% if task.priority == 'High' %}bg-danger{% elif task.priority == 'Medium' %}bg-warning{% else %}bg-info{% endif %}">
+                                        {{ task.priority }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if task.is_completed %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if task.related_goals.count() > 0 %}
+                                        {% for goal in task.related_goals %}
+                                            <span class="badge bg-secondary">{{ goal.title }}</span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <small class="text-muted">None</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('tasks.view', id=task.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+
+                                        {% if not task.is_completed %}
+                                            <a href="{{ url_for('tasks.edit', id=task.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                            <a href="{{ url_for('tasks.complete', id=task.id) }}" class="btn btn-sm btn-outline-success">Complete</a>
+                                        {% endif %}
+
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                data-bs-toggle="modal" data-bs-target="#deleteTaskModal{{ task.id }}">
+                                            Delete
+                                        </button>
+                                    </div>
+
+                                    <!-- Delete Confirmation Modal -->
+                                    <div class="modal fade" id="deleteTaskModal{{ task.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Confirm Delete</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to delete the task "{{ task.title }}"?</p>
+                                                    <p class="text-danger">This action cannot be undone.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <form action="{{ url_for('tasks.delete', id=task.id) }}" method="POST">
+                                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p>You don't have any tasks yet. Create your first task to get started!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
