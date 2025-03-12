@@ -2,62 +2,139 @@
 {% from "dashboard/analytics_widget.html" import analytics_widget %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12 mb-4">
+<div class="row mb-4">
+    <div class="col-md-12">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title mb-0">Welcome, {{ current_user.username }}</h3>
-                <div>
-                    <a href="{{ url_for('dashboard.quick_add_task') }}" class="btn btn-sm btn-primary">Quick Add Task</a>
-                    <a href="{{ url_for('goals.create') }}" class="btn btn-sm btn-success">New Goal</a>
+            <div class="card-header">
+                <h3 class="card-title mb-0">Welcome, {{ current_user.username }}!</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Split into separate Goal Progress and Stats Cards -->
+<div class="row mb-4">
+    <!-- Goal Progress Section -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Goal Progress</h5>
+            </div>
+            <div class="card-body">
+                <div class="progress mb-3">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ overall_progress }}%;"
+                         aria-valuenow="{{ overall_progress }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ overall_progress|round(1) }}%
+                    </div>
                 </div>
+                <p>Overall Goal Completion: {{ overall_progress|round(1) }}%</p>
+                <p>Task Completion Rate: {{ task_completion_rate|round(1) }}%</p>
+                <div class="text-end">
+                    <a href="{{ url_for('analytics.index') }}" class="btn btn-sm btn-outline-primary">View Analytics</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Section -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Quick Stats</h5>
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Goal Progress</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="progress mb-3">
-                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ overall_progress }}%;"
-                                         aria-valuenow="{{ overall_progress }}" aria-valuemin="0" aria-valuemax="100">
-                                        {{ overall_progress|round(1) }}%
-                                    </div>
-                                </div>
-                                <p>Overall Goal Completion: {{ overall_progress|round(1) }}%</p>
-                                <p>Task Completion Rate: {{ task_completion_rate|round(1) }}%</p>
-                                <div class="text-end">
-                                    <a href="{{ url_for('analytics.index') }}" class="btn btn-sm btn-outline-primary">View Analytics</a>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="col-6">
+                        <h6>Long-term Goals</h6>
+                        <h3>{{ long_term_goals|length }}</h3>
                     </div>
-                    <div class="col-md-6">
-                        <div class="card mb-3">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Quick Stats</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-6">
-                                        <h6>Long-term Goals</h6>
-                                        <h3>{{ long_term_goals|length }}</h3>
-                                    </div>
-                                    <div class="col-6">
-                                        <h6>Short-term Goals</h6>
-                                        <h3>{{ short_term_goals|length }}</h3>
-                                    </div>
-                                    <div class="col-12 mt-3">
-                                        <h6>Upcoming Tasks</h6>
-                                        <h3>{{ upcoming_tasks|length }}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="col-6">
+                        <h6>Short-term Goals</h6>
+                        <h3>{{ short_term_goals|length }}</h3>
+                    </div>
+                    <div class="col-12 mt-3">
+                        <h6>Upcoming Tasks</h6>
+                        <h3>{{ upcoming_tasks|length }}</h3>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Upcoming Tasks</h5>
+                <a href="{{ url_for('tasks.create') }}" class="btn btn-sm btn-outline-primary">Add Task</a>
+            </div>
+            <div class="card-body">
+                {% if upcoming_tasks %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Task</th>
+                                    <th>Due Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in upcoming_tasks %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('tasks.view', id=task.id) }}"> {{ task.title }} </a>
+                                        </td>
+                                        <td>
+                                            {% if task.due_date %}
+                                                <span class="badge {% if task.due_date.date() <= now.date() %}bg-danger text-white{% elif (task.due_date.date() - now.date()).days <= 3 %}bg-warning text-dark{% else %}bg-light text-dark{% endif %} px-2 py-1">
+                                                    {{ task.due_date.strftime('%Y-%m-%d') }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">No date</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ url_for('tasks.view', id=task.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                                <a href="{{ url_for('tasks.edit', id=task.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                                <a href="{{ url_for('tasks.complete', id=task.id) }}" class="btn btn-sm btn-outline-success">Complete</a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                                        data-bs-toggle="modal" data-bs-target="#deleteTaskModal{{ task.id }}">
+                                                    Delete
+                                                </button>
+                                            </div>
+                                            <!-- Delete Confirmation Modal -->
+                                            <div class="modal fade" id="deleteTaskModal{{ task.id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Confirm Delete</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p>Are you sure you want to delete the task "{{ task.title }}"?</p>
+                                                            <p class="text-danger">This action cannot be undone.</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <form action="{{ url_for('tasks.delete', id=task.id) }}" method="POST">
+                                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No upcoming tasks. Add your first one!</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -115,7 +192,7 @@
                             <a href="{{ url_for('goals.view', id=goal.id) }}" class="list-group-item list-group-item-action">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-1">{{ goal.title }}</h6>
-                                    <span class="badge {% if goal.priority == 'High' %}bg-danger{% elif goal.priority == 'Medium' %}bg-warning{% else %}bg-info{% endif %}">
+                                    <span class="badge {% if goal.priority == 'High' %}bg-danger text-white{% elif goal.priority == 'Medium' %}bg-warning text-dark{% else %}bg-light text-dark{% endif %} px-2 py-1">
                                         {{ goal.priority }}
                                     </span>
                                 </div>
@@ -130,127 +207,6 @@
                 {% else %}
                     <p class="text-muted">No short-term goals yet. Add your first one!</p>
                 {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-8 mb-4">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Upcoming Tasks</h5>
-                <a href="{{ url_for('tasks.create') }}" class="btn btn-sm btn-outline-primary">Add Task</a>
-            </div>
-            <div class="card-body">
-                {% if upcoming_tasks %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Task</th>
-                                    <th>Due Date</th>
-                                    <th>Priority</th>
-                                    <th>Related Goals</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for task in upcoming_tasks %}
-                                    <tr>
-                                        <td>
-                                            <a href="{{ url_for('tasks.view', id=task.id) }}">{{ task.title }}</a>
-                                        </td>
-                                        <td>
-                                            {% if task.due_date %}
-                                                {{ task.due_date.strftime('%Y-%m-%d') }}
-                                            {% else %}
-                                                No date
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <span class="badge {% if task.priority == 'High' %}bg-danger{% elif task.priority == 'Medium' %}bg-warning{% else %}bg-info{% endif %}">
-                                                {{ task.priority }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% if task.related_goals.count() > 0 %}
-                                                {% for goal in task.related_goals %}
-                                                    <span class="badge bg-secondary">{{ goal.title }}</span>
-                                                {% endfor %}
-                                            {% else %}
-                                                <small class="text-muted">None</small>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <a href="{{ url_for('tasks.complete', id=task.id) }}" class="btn btn-sm btn-success">Complete</a>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <p class="text-muted">No upcoming tasks. Add your first one!</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Recently Completed</h5>
-            </div>
-            <div class="card-body">
-                {% if recent_completed_tasks %}
-                    <ul class="list-group">
-                        {% for task in recent_completed_tasks %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-0">{{ task.title }}</h6>
-                                    <small class="text-muted">Completed {{ task.updated_at.strftime('%Y-%m-%d') }}</small>
-                                </div>
-                                <span class="badge bg-success rounded-pill">Done</span>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="text-muted">No completed tasks yet.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-12 mb-4">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Goal Overview</h5>
-                <!-- <a href="{{ url_for('dashboard.overview') }}" class="btn btn-sm btn-outline-secondary">View Full Overview</a> -->
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-8">
-                        <p>View the complete hierarchy of your goals and their relationships.</p>
-                        <p>The interactive goal network visualization allows you to:</p>
-                        <ul>
-                            <li>See all your goals and how they're connected</li>
-                            <li>Identify parent-child relationships</li>
-                            <li>Track progress across your goal hierarchy</li>
-                        </ul>
-                        <a href="{{ url_for('dashboard.overview') }}" class="btn btn-primary">
-                            <i class="bi bi-diagram-3"></i> Goal Network View
-                        </a>
-                    </div>
-                    <div class="col-md-4 text-center">
-                        <div style="background-color: #f8f9fa; border-radius: 0.5rem; padding: 10px; height: 120px; display: flex; align-items: center; justify-content: center;">
-                            <i class="bi bi-diagram-3" style="font-size: 3rem; color: #0d6efd;"></i>
-                        </div>
-                        <small class="text-muted mt-2 d-block">Interactive Goal Network Visualization</small>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
