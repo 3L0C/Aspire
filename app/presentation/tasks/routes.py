@@ -96,15 +96,44 @@ def edit(id):
         (g.id, g.title)
         for g in Goal.query.filter_by(user_id=current_user.id).all()
     ]
-    form.related_goals.data = [goal.id for goal in task.related_goals]
+
+    # Set the default selected values if form is not submitted
+    if not form.is_submitted():
+        form.related_goals.data = [goal.id for goal in task.related_goals]
 
     if form.validate_on_submit():
-        form.populate_obj(task)
+        # Store the selected goal IDs
+        selected_goal_ids = set(form.related_goals.data)
 
-        # Update related goals
-        task.related_goals = []
-        if form.related_goals.data:
-            for goal_id in form.related_goals.data:
+        # Update all fields except related_goals
+        # Need to handle all fields manually to avoid populating related_goals
+        task.title = form.title.data
+        task.description = form.description.data
+        task.due_date = form.due_date.data
+        task.priority = form.priority.data
+        task.estimated_duration = form.estimated_duration.data
+
+        # Handle type-specific fields
+        if task.type == 'one_time':
+            task.deadline = form.deadline.data
+            task.reminder = form.reminder.data
+        elif task.type == 'recurring':
+            task.frequency = form.frequency.data
+            task.interval = form.interval.data
+            task.end_date = form.end_date.data
+
+        # Get current related goals as a list to avoid modification during iteration
+        current_goals = list(task.related_goals)
+
+        # Remove goals that are no longer selected
+        for goal in current_goals:
+            if goal.id not in selected_goal_ids:
+                task.related_goals.remove(goal)
+
+        # Add newly selected goals
+        current_goal_ids = {goal.id for goal in current_goals}
+        for goal_id in selected_goal_ids:
+            if goal_id not in current_goal_ids:
                 goal = Goal.query.get(goal_id)
                 if goal and goal.user_id == current_user.id:
                     task.link_to_goal(goal)
