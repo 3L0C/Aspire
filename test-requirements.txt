@@ -1,0 +1,14 @@
+# Core testing packages
+pytest
+pytest-cov
+
+# Flask specific - pinned to compatible versions
+Flask
+pytest-flask
+Flask-SQLAlchemy
+
+# Database testing
+SQLAlchemy
+
+# Development tooling
+coverage
