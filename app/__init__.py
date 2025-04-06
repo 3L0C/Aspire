@@ -16,7 +16,15 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 
-def create_app():
+def create_app(test_config=None):
+    """Create and configure the Flask application.
+
+    Args:
+        test_config: Optional configuration dictionary for testing
+
+    Returns:
+        The configured Flask application
+    """
     # Initialize Flask
     app = Flask(__name__)
 
@@ -24,6 +32,10 @@ def create_app():
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///aspire.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Override with test configuration if provided
+    if test_config:
+        app.config.update(test_config)
 
     # Initialize extensions with app
     db.init_app(app)
