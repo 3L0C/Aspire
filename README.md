@@ -31,7 +31,7 @@ Aspire is a comprehensive goal-tracking web application built on Goal-Setting Th
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/aspire.git
+git clone https://github.com/3L0C/Aspire
 cd aspire
 ```
 
