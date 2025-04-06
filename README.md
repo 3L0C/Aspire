@@ -76,13 +76,7 @@ You can generate a secure random key using Python:
 python -c "import secrets; print(secrets.token_hex(16))"
 ```
 
-### 6. Initialize the Database
-
-```bash
-python -c "from app import create_app; from app import db; app = create_app(); app.app_context().push(); db.create_all()"
-```
-
-### 7. Run the Application
+### 6. Run the Application
 
 ```bash
 python run.py
@@ -90,7 +84,7 @@ python run.py
 
 The application will be available at `http://127.0.0.1:5000/`.
 
-### 8. Create an Admin User (Optional)
+### 7. Create an Admin User (Optional)
 
 The first user you register will be automatically created. You can register at `http://127.0.0.1:5000/register`.
 
